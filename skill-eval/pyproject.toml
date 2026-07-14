@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "skill-evaluator"
+version = "2.0.0"
+description = "通用 AI Skill 综合质量评测框架 v2.0"
+authors = ["skill-evaluator-team"]
+readme = "README.md"
+packages = [{include = "evaluator"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+anthropic = "^0.40.0"
+pydantic = "^2.0"
+pydantic-settings = "^2.0"
+jinja2 = "^3.1"
+structlog = "^24.0"
+click = "^8.1"
+pyyaml = "^6.0"
+gitpython = "^3.1"
+
+[tool.poetry.group.static-analysis.dependencies]
+pylint = "^3.0"
+radon = "^6.0"
+bandit = "^1.8"
+pip-audit = "^2.0"
+
+[tool.poetry.group.docker.dependencies]
+aiodocker = "^0.21.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.0"
+pytest-asyncio = "^0.23"
+
+[tool.poetry.scripts]
+skill-eval = "evaluator.cli:main"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.pylint."messages control"]
+disable = ["too-few-public-methods", "missing-module-docstring"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

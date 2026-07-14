@@ -1,0 +1,17 @@
+{
+  "name": "skill-evaluator",
+  "version": "1.0.0",
+  "type": "analyzer",
+  "description": "通用 AI Skill 综合质量评测框架 v2.0。对任意 AI Skill / Agent / 工具进行五层自动化质量评测，输出 0-100 分评分、A-F 等级和 HTML 可视化报告。支持多 Profile 权重体系、eval_id 强绑定存储、LLM Judge 打分、聚合横向对比。",
+  "author": "skill-evaluator-team",
+  "tags": ["evaluation", "quality", "testing", "skill", "analyzer", "llm-judge"],
+  "dependencies": [
+    "anthropic>=0.40.0",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "jinja2>=3.1",
+    "structlog>=24.0",
+    "click>=8.1",
+    "pyyaml>=6.0"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "skill_name": "skill-evaluator",
+  "generated_from": "manual",
+  "generation_time": "2026-03-13T15:00:00Z",
+  "test_cases": [
+    {
+      "id": "eval_001",
+      "source": "manual",
+      "priority": "P0",
+      "prompt": "Evaluate a well-formed skill with good documentation and no security issues",
+      "input_files": [],
+      "expected_behavior": "Should pass all layers and give a high score (≥80/100)",
+      "assertions": [
+        {
+          "name": "layer1_passed",
+          "description": "Layer 1 (Quick Filter) should pass",
+          "type": "json_field_equals",
+          "target": "evaluation_results/layer1_results.json",
+          "field": "passed",
+          "expected": true
+        },
+        {
+          "name": "layer2_passed",
+          "description": "Layer 2 (Static Analysis) should pass",
+          "type": "json_field_equals",
+          "target": "evaluation_results/evaluation_summary.json",
+          "field": "layers.layer2.passed",
+          "expected": true
+        },
+        {
+          "name": "high_score",
+          "description": "Total score should be ≥80",
+          "type": "json_field_gte",
+          "target": "evaluation_results/evaluation_summary.json",
+          "field": "total_score",
+          "threshold": 80
+        }
+      ]
+    },
+    {
+      "id": "eval_002",
+      "source": "manual",
+      "priority": "P0",
+      "prompt": "Evaluate a skill with missing SKILL.md",
+      "input_files": [],
+      "expected_behavior": "Should block at Layer 1 with clear error message",
+      "assertions": [
+        {
+          "name": "layer1_blocked",
+          "description": "Layer 1 should fail",
+          "type": "json_field_equals",
+          "target": "evaluation_results/layer1_results.json",
+          "field": "passed",
+          "expected": false
+        },
+        {
+          "name": "evaluation_blocked",
+          "description": "Overall evaluation should be blocked",
+          "type": "json_field_equals",
+          "target": "evaluation_results/evaluation_summary.json",
+          "field": "status",
+          "expected": "blocked"
+        }
+      ]
+    },
+    {
+      "id": "eval_003",
+      "source": "manual",
+      "priority": "P1",
+      "prompt": "Evaluate a skill with security vulnerabilities (e.g., uses eval() or os.system())",
+      "input_files": [],
+      "expected_behavior": "Should detect critical security issues and block at Layer 2",
+      "assertions": [
+        {
+          "name": "critical_issues_detected",
+          "description": "Critical security issues should be detected",
+          "type": "json_field_gt",
+          "target": "evaluation_results/security_results.json",
+          "field": "summary.critical",
+          "threshold": 0
+        },
+        {
+          "name": "security_blocked",
+          "description": "Security check should fail",
+          "type": "json_field_equals",
+          "target": "evaluation_results/security_results.json",
+          "field": "passed",
+          "expected": false
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "happy_path": 1,
+    "edge_cases": 1,
+    "error_cases": 1,
+    "total": 3
+  }
+}

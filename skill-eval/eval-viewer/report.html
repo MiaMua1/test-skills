@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill 评测报告</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c04040;
+      --red-bg: #fceaea;
+      --yellow: #b07d30;
+      --yellow-bg: #fdf4e3;
+      --blue: #3b6cb5;
+      --blue-bg: #e8eef8;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.875rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .header-subtitle {
+      font-size: 0.72rem;
+      opacity: 0.55;
+      margin-top: 0.15rem;
+      font-family: 'Poppins', sans-serif;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .header-score-block {
+      text-align: right;
+    }
+    .header-score-num {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .header-score-label {
+      font-size: 0.65rem;
+      opacity: 0.55;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-family: 'Poppins', sans-serif;
+    }
+    .header-grade {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ---- Tab bar ---- */
+    .tab-bar {
+      display: flex;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.6rem 1.1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ---- Panels ---- */
+    .panel { display: none; flex: 1; overflow-y: auto; }
+    .panel.active { display: block; }
+    .content {
+      padding: 1.5rem 2rem;
+      max-width: 1080px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ---- Cards ---- */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-head-label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .card-body { padding: 1rem 1.25rem; }
+
+    /* ---- Overview hero ---- */
+    .overview-hero {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      padding: 1.25rem 1.25rem 1rem;
+    }
+    .score-ring-wrap {
+      position: relative;
+      flex-shrink: 0;
+      width: 110px;
+      height: 110px;
+    }
+    .score-ring-wrap svg { position: absolute; top: 0; left: 0; }
+    .score-ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ring-num {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .ring-denom { font-size: 0.7rem; color: var(--text-muted); }
+    .overview-right { flex: 1; min-width: 0; }
+    .grade-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.875rem;
+      flex-wrap: wrap;
+    }
+    .grade-pill {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.375rem;
+      font-weight: 700;
+      padding: 0.2rem 0.7rem;
+      border-radius: var(--radius);
+      line-height: 1.4;
+    }
+    .grade-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .grade-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .s-pass { background: var(--green-bg); color: var(--green); }
+    .s-warn { background: var(--yellow-bg); color: var(--yellow); }
+    .s-fail { background: var(--red-bg); color: var(--red); }
+
+    /* ---- Score bars ---- */
+    .score-bars { display: flex; flex-direction: column; gap: 0.55rem; }
+    .sbar-row { display: flex; align-items: center; gap: 0.75rem; }
+    .sbar-label { font-size: 0.8rem; width: 115px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sbar-track { flex: 1; height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .sbar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+    .sbar-val { font-family: 'Poppins', sans-serif; font-size: 0.72rem; font-weight: 600; width: 48px; text-align: right; flex-shrink: 0; }
+
+    /* ---- Stats row ---- */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.875rem; margin-bottom: 1.25rem; }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.875rem 1rem;
+      text-align: center;
+    }
+    .stat-val { font-family: 'Poppins', sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1.1; margin-bottom: 0.2rem; }
+    .stat-lbl { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* ---- Findings grid ---- */
+    .findings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .finding-item { display: flex; gap: 0.5rem; font-size: 0.8rem; line-height: 1.55; margin-bottom: 0.5rem; }
+    .finding-col-label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ---- Layer check grid ---- */
+    .check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+    .check-tile {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+    }
+    .check-tile-name { font-family: 'Poppins', sans-serif; font-size: 0.67rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .check-tile-score { font-family: 'Poppins', sans-serif; font-size: 1.25rem; font-weight: 700; }
+    .check-tile-denom { font-size: 0.75rem; color: var(--text-muted); font-family: 'Poppins', sans-serif; }
+    .check-issues { list-style: none; margin-top: 0.5rem; }
+    .check-issues li { font-size: 0.75rem; color: var(--text-muted); padding: 0.2rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 0.375rem; }
+    .check-issues li:last-child { border-bottom: none; }
+
+    /* ---- Security scans ---- */
+    .sec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 0.5rem; }
+    .sec-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+    }
+    .sec-item.pass { border-left: 3px solid var(--green); }
+    .sec-item.fail { border-left: 3px solid var(--red); }
+
+    /* ---- Test cases ---- */
+    .test-card { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.625rem; overflow: hidden; }
+    .test-head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      user-select: none;
+      background: var(--surface);
+      transition: background 0.1s;
+    }
+    .test-head:hover { background: var(--bg); }
+    .test-icon { flex-shrink: 0; font-size: 0.95rem; }
+    .test-info { flex: 1; min-width: 0; }
+    .test-name { font-size: 0.875rem; font-weight: 500; }
+    .test-err { font-size: 0.72rem; color: var(--red); margin-top: 0.2rem; font-family: 'SF Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .test-meta { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .p-badge {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 0.12rem 0.4rem;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+    .p0 { background: #fee2e2; color: #991b1b; }
+    .p1 { background: var(--yellow-bg); color: var(--yellow); }
+    .p2 { background: var(--blue-bg); color: var(--blue); }
+    .test-chevron { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.15s; }
+    .test-chevron.open { transform: rotate(90deg); }
+    .test-body { display: none; padding: 0 1rem 0.875rem; background: var(--bg); border-top: 1px solid var(--border); }
+    .test-body.open { display: block; }
+    .assertion-row { display: flex; gap: 0.5rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+    .assertion-row:last-child { border-bottom: none; }
+    .assertion-icon { flex-shrink: 0; }
+    .assertion-text { flex: 1; }
+    .assertion-ev { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; font-family: 'SF Mono', SFMono-Regular, Consolas, monospace; word-break: break-all; }
+
+    /* ---- Bugs ---- */
+    .bug-card { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.75rem; overflow: hidden; }
+    .bug-card.lp0 { border-left: 4px solid var(--red); }
+    .bug-card.lp1 { border-left: 4px solid var(--yellow); }
+    .bug-card.lp2 { border-left: 4px solid var(--blue); }
+    .bug-head { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.875rem 1rem; background: var(--surface); }
+    .bug-pbadge {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.18rem 0.45rem;
+      border-radius: 3px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+    .bug-body { flex: 1; }
+    .bug-title { font-size: 0.9375rem; font-weight: 500; margin-bottom: 0.3rem; }
+    .bug-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; }
+    .bug-loc { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem; font-family: 'SF Mono', monospace; }
+    .bug-impact { font-size: 0.72rem; color: var(--red); margin-top: 0.3rem; }
+    .bug-fix { background: var(--bg); border-top: 1px solid var(--border); padding: 0.75rem 1rem; }
+    .bug-fix-lbl {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 0.375rem;
+    }
+    .bug-fix-text { font-size: 0.8rem; margin-bottom: 0.5rem; line-height: 1.5; }
+    .code-block {
+      font-size: 0.78rem;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      white-space: pre-wrap;
+      background: var(--header-bg);
+      color: #e8e6dc;
+      padding: 0.625rem 0.875rem;
+      border-radius: 4px;
+      line-height: 1.55;
+    }
+
+    /* ---- Recommendations ---- */
+    .rec-list { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .rec-row { display: flex; align-items: center; gap: 0.875rem; padding: 0.625rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+    .rec-row:last-child { border-bottom: none; }
+    .rec-gain { font-family: 'Poppins', sans-serif; font-size: 0.72rem; font-weight: 700; color: var(--green); flex-shrink: 0; width: 48px; text-align: right; }
+    .rec-desc { flex: 1; }
+    .rec-effort { font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; }
+
+    /* ---- Benchmark ---- */
+    .bench-table { border-collapse: collapse; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; font-size: 0.8125rem; margin-bottom: 1.25rem; }
+    .bench-table th, .bench-table td { padding: 0.625rem 0.875rem; text-align: left; border-bottom: 1px solid var(--border); }
+    .bench-table tr:last-child td { border-bottom: none; }
+    .bench-table th { font-family: 'Poppins', sans-serif; background: var(--header-bg); color: var(--header-text); font-weight: 500; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .bench-table tr:hover td { background: var(--bg); }
+    .dp { color: var(--green); font-weight: 600; }
+    .dn { color: var(--red); font-weight: 600; }
+    .dz { color: var(--text-muted); }
+
+    /* ---- Effect verdict ---- */
+    .verdict-card {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1.25rem;
+    }
+    .verdict-icon { font-size: 2.5rem; flex-shrink: 0; }
+    .verdict-title { font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 600; }
+    .verdict-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; line-height: 1.5; }
+
+    /* ---- Misc ---- */
+    .section-title { font-family: 'Poppins', sans-serif; font-size: 0.875rem; font-weight: 600; margin: 1.25rem 0 0.75rem; }
+    .section-title:first-child { margin-top: 0; }
+    .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+    .tag-sm { display: inline-flex; align-items: center; padding: 0.12rem 0.5rem; border-radius: 9999px; font-family: 'Poppins', sans-serif; font-size: 0.65rem; font-weight: 600; }
+    .empty { color: var(--text-muted); text-align: center; padding: 3rem; font-style: italic; }
+  </style>
+</head>
+<body>
+<div id="app" style="height:100vh;display:flex;flex-direction:column;">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="header-title">Skill 评测报告 · <span id="hd-name">—</span></div>
+      <div class="header-subtitle"><span id="hd-version"></span> · <span id="hd-date"></span></div>
+    </div>
+    <div class="header-right">
+      <div class="header-score-block">
+        <div class="header-score-num" id="hd-score">—</div>
+        <div class="header-score-label">/ 100 分</div>
+      </div>
+      <div class="header-grade" id="hd-grade">—</div>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('overview')">概览</button>
+    <button class="tab-btn" onclick="switchTab('layers')">评测层详情</button>
+    <button class="tab-btn" onclick="switchTab('tests')">测试用例</button>
+    <button class="tab-btn" onclick="switchTab('benchmark')">对比分析</button>
+    <button class="tab-btn" onclick="switchTab('bugs')">问题 &amp; 修复</button>
+  </div>
+
+  <!-- Overview panel -->
+  <div class="panel active" id="panel-overview">
+    <div class="content">
+      <div class="stats-row" id="stats-row"></div>
+      <div class="card">
+        <div class="card-head"><span class="card-head-label">综合评分</span></div>
+        <div class="overview-hero">
+          <div class="score-ring-wrap">
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="46" fill="none" stroke="var(--border)" stroke-width="9"/>
+              <circle id="score-ring" cx="55" cy="55" r="46" fill="none" stroke="var(--green)" stroke-width="9"
+                stroke-dasharray="289" stroke-dashoffset="289" stroke-linecap="round"
+                transform="rotate(-90 55 55)" style="transition:stroke-dashoffset 1s ease;"/>
+            </svg>
+            <div class="score-ring-center">
+              <div class="ring-num" id="ring-score">—</div>
+              <div class="ring-denom">/100</div>
+            </div>
+          </div>
+          <div class="overview-right">
+            <div class="grade-row">
+              <div class="grade-pill" id="grade-pill">—</div>
+              <div>
+                <div class="grade-name" id="grade-name">—</div>
+                <div class="grade-sub" id="grade-sub"></div>
+              </div>
+              <span class="status-pill" id="status-pill"></span>
+            </div>
+            <div class="score-bars" id="score-bars"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-head-label">关键发现</span></div>
+        <div class="card-body">
+          <div class="findings-grid" id="findings-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layers panel -->
+  <div class="panel" id="panel-layers">
+    <div class="content" id="layers-content"></div>
+  </div>
+
+  <!-- Tests panel -->
+  <div class="panel" id="panel-tests">
+    <div class="content" id="tests-content"></div>
+  </div>
+
+  <!-- Benchmark panel -->
+  <div class="panel" id="panel-benchmark">
+    <div class="content" id="benchmark-content"></div>
+  </div>
+
+  <!-- Bugs panel -->
+  <div class="panel" id="panel-bugs">
+    <div class="content" id="bugs-content"></div>
+  </div>
+
+</div>
+
+<script>
+  // ---- Embedded data (injected by generate_report.py) ----
+  /*__SKILL_EVAL_DATA__*/
+
+  // ---- Grade config ----
+  var GRADES = {
+    A: { name: '卓越', sub: '生产就绪，高质量', color: '#788c5d', bg: '#eef2e8' },
+    B: { name: '良好', sub: '生产就绪，有小问题', color: '#3b6cb5', bg: '#e8eef8' },
+    C: { name: '可接受', sub: '可发布，建议改进', color: '#b07d30', bg: '#fdf4e3' },
+    D: { name: '需改进', sub: '不建议发布', color: '#c04040', bg: '#fceaea' },
+    F: { name: '不合格', sub: '需大规模修订', color: '#991b1b', bg: '#fee2e2' }
+  };
+
+  function scoreColor(pct) {
+    return pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--yellow)' : 'var(--red)';
+  }
+
+  // ---- Init ----
+  function init() {
+    var d = SKILL_EVAL_DATA;
+    var grade = d.summary.grade || 'F';
+    var gc = GRADES[grade] || GRADES.F;
+    var score = d.summary.total_score || 0;
+
+    // Header
+    document.getElementById('hd-name').textContent = d.skill_name || '—';
+    document.getElementById('hd-version').textContent = d.version || '';
+    var dateStr = d.evaluation_date ? new Date(d.evaluation_date).toLocaleDateString('zh-CN') : '';
+    document.getElementById('hd-date').textContent = dateStr;
+    document.getElementById('hd-score').textContent = score;
+    var hg = document.getElementById('hd-grade');
+    hg.textContent = grade;
+    hg.style.background = gc.bg;
+    hg.style.color = gc.color;
+
+    renderOverview(d, gc, score, grade);
+    renderLayers(d);
+    renderTests(d);
+    renderBenchmark(d);
+    renderBugs(d);
+
+    // Dynamically rename benchmark tab based on whether baseline comparison exists
+    var l4check = (d.layers || {}).layer4 || {};
+    var evcheck = d.effect_validation || {};
+    var hasBase = evcheck.without_skill_pass_rate != null || (!l4check.delta_skipped && l4check.delta_max > 0);
+    var benchBtn = document.querySelector('[onclick="switchTab(\'benchmark\')"]');
+    if (benchBtn) benchBtn.textContent = hasBase ? '对比分析' : '效果分析';
+  }
+
+  // ---- Overview ----
+  function renderOverview(d, gc, score, grade) {
+    // Animate ring
+    setTimeout(function() {
+      var ring = document.getElementById('score-ring');
+      var circ = 289;
+      ring.style.strokeDashoffset = circ - (score / 100) * circ;
+      ring.style.stroke = gc.color;
+    }, 120);
+
+    document.getElementById('ring-score').textContent = score;
+    document.getElementById('ring-score').style.color = gc.color;
+
+    var gp = document.getElementById('grade-pill');
+    gp.textContent = grade;
+    gp.style.background = gc.bg;
+    gp.style.color = gc.color;
+
+    document.getElementById('grade-name').textContent = gc.name;
+    document.getElementById('grade-sub').textContent = gc.sub;
+
+    var sp = document.getElementById('status-pill');
+    var status = d.summary.status || '';
+    if (status === 'blocked') {
+      sp.className = 'status-pill s-fail'; sp.textContent = '🚫 已阻断';
+    } else if (score >= 80) {
+      sp.className = 'status-pill s-pass'; sp.textContent = '✅ 通过';
+    } else if (score >= 60) {
+      sp.className = 'status-pill s-warn'; sp.textContent = '⚠️ 待改进';
+    } else {
+      sp.className = 'status-pill s-fail'; sp.textContent = '❌ 不通过';
+    }
+
+    // Stats
+    var tests = d.test_cases || [];
+    var bugs = d.bugs || [];
+    var p0bugs = bugs.filter(function(b) { return b.priority === 'P0'; }).length;
+    var passedT = tests.filter(function(t) { return t.result === 'pass'; }).length;
+    var stats = [
+      { val: score + '/100', lbl: '总评分', color: gc.color },
+      { val: passedT + '/' + tests.length, lbl: '测试通过', color: passedT === tests.length && tests.length > 0 ? 'var(--green)' : 'var(--yellow)' },
+      { val: p0bugs, lbl: 'P0 关键 Bug', color: p0bugs > 0 ? 'var(--red)' : 'var(--green)' },
+      { val: bugs.length, lbl: '问题总数', color: bugs.length > 3 ? 'var(--yellow)' : 'var(--green)' }
+    ];
+    document.getElementById('stats-row').innerHTML = stats.map(function(s) {
+      return '<div class="stat-card"><div class="stat-val" style="color:' + s.color + '">' + s.val + '</div><div class="stat-lbl">' + s.lbl + '</div></div>';
+    }).join('');
+
+    // Score bars — filter out zero-max items (e.g. code quality for no_code profile)
+    var activeItems = (d.score_breakdown || []).filter(function(item) { return item.max > 0; });
+    var effectiveMax = activeItems.reduce(function(s, item) { return s + item.max; }, 0) || 100;
+    var barsEl = document.getElementById('score-bars');
+    barsEl.innerHTML = activeItems.map(function(item) {
+      var pct = Math.round((item.score / item.max) * 100);
+      var col = scoreColor(pct);
+      var weightPct = Math.round((item.max / effectiveMax) * 100);
+      return '<div class="sbar-row">' +
+        '<div class="sbar-label">' + esc(item.label) +
+          '<span style="font-size:0.65rem;color:var(--text-muted);margin-left:0.25rem;">(' + weightPct + '%权重)</span></div>' +
+        '<div class="sbar-track"><div class="sbar-fill" style="width:' + pct + '%;background:' + col + ';"></div></div>' +
+        '<div class="sbar-val" style="color:' + col + '">' + item.score + '/' + item.max + '</div>' +
+        '</div>';
+    }).join('');
+
+    // Findings
+    var strengths = (d.key_findings || {}).strengths || [];
+    var issues = (d.key_findings || {}).issues || [];
+    var fg = document.getElementById('findings-grid');
+    fg.innerHTML = '<div>' +
+      '<div class="finding-col-label" style="color:var(--green)">优势</div>' +
+      strengths.map(function(s) { return '<div class="finding-item"><span>✅</span><span>' + esc(s) + '</span></div>'; }).join('') +
+      '</div><div>' +
+      '<div class="finding-col-label" style="color:var(--red)">关注点</div>' +
+      issues.map(function(s) { return '<div class="finding-item"><span>⚠️</span><span>' + esc(s) + '</span></div>'; }).join('') +
+      '</div>';
+  }
+
+  // ---- Layers ----
+  function renderLayers(d) {
+    var el = document.getElementById('layers-content');
+    var layers = d.layers || {};
+    var html = '';
+
+    // Layer 1
+    if (layers.layer1) {
+      var l1 = layers.layer1;
+      var l1max = l1.max_score || l1.max || 20;
+      html += layerCardOpen('Layer 1 · 快速过滤', l1.score, l1max, l1.passed !== false);
+      html += '<div class="card-body"><div class="check-grid">';
+      var checks = l1.checks || {};
+      // Read max from data if available, otherwise use profile-aware defaults
+      var metaMax = (checks.metadata || {}).max || Math.round(l1max * 0.4 / 2);
+      var docMax  = (checks.documentation || {}).max || Math.round(l1max * 0.4);
+      var compMax = (checks.basic_compliance || {}).max || Math.round(l1max * 0.2);
+      var checkDefs = [
+        { key: 'metadata', label: '元数据验证', max: metaMax },
+        { key: 'documentation', label: '文档完整性', max: docMax },
+        { key: 'basic_compliance', label: '基础合规', max: compMax }
+      ];
+      checkDefs.forEach(function(cd) {
+        var c = checks[cd.key] || {};
+        var cs = c.score != null ? c.score : cd.max;
+        var col = scoreColor(Math.round((cs / cd.max) * 100));
+        html += '<div class="check-tile">';
+        html += '<div class="check-tile-name">' + cd.label + '</div>';
+        html += '<div class="check-tile-score" style="color:' + col + '">' + cs + '<span class="check-tile-denom">/' + cd.max + '</span></div>';
+        var issues = c.issues || [];
+        if (issues.length > 0) {
+          html += '<ul class="check-issues">' + issues.map(function(i) { return '<li><span>⚠️</span><span>' + esc(i) + '</span></li>'; }).join('') + '</ul>';
+        } else {
+          html += '<div style="color:var(--green);font-size:0.73rem;margin-top:0.375rem;">✅ 无问题</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div></div></div>';
+    }
+
+    // Layer 2
+    if (layers.layer2) {
+      var l2 = layers.layer2;
+      var cq = l2.code_quality || {};
+      var sec = l2.security || {};
+      var combined = (cq.score || 0) + (sec.score || 0);
+      var l2CombinedMax = l2.combined_max || (cq.max || cq.max_score || 20) + (sec.max || sec.max_score || 20);
+      html += layerCardOpen('Layer 2 · 静态分析', combined, l2CombinedMax, l2.passed !== false);
+      html += '<div class="card-body">';
+
+      // Code quality
+      var cqMax = cq.max || cq.max_score || 20;
+      html += '<div class="section-title">代码质量 (' + (cq.score || 0) + '/' + cqMax + ')</div>';
+      var cqIssues = cq.issues || [];
+      if (cqIssues.length > 0) {
+        html += '<div style="display:flex;flex-direction:column;gap:0.375rem;">';
+        cqIssues.forEach(function(issue) {
+          var sev = issue.severity === 'critical' ? '🔴' : issue.severity === 'minor' ? '🟡' : '🟢';
+          html += '<div style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;padding:0.375rem 0;border-bottom:1px solid var(--border);">';
+          html += '<span>' + sev + '</span><span style="flex:1;">' + esc(issue.description || issue) + '</span>';
+          if (issue.location) html += '<span style="font-family:monospace;font-size:0.72rem;color:var(--text-muted);">' + esc(issue.location) + '</span>';
+          html += '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div style="color:var(--green);font-size:0.8rem;">✅ 代码质量良好，无明显问题</div>';
+      }
+
+      html += '<div class="divider"></div>';
+
+      // Security
+      var secMax = sec.max || sec.max_score || 20;
+      html += '<div class="section-title">安全扫描 (' + (sec.score || 0) + '/' + secMax + ')</div>';
+      var critIssues = sec.critical_issues || [];
+      if (critIssues.length > 0) {
+        html += '<div style="background:var(--red-bg);border:1px solid var(--red);border-radius:var(--radius);padding:0.75rem;margin-bottom:0.75rem;color:var(--red);font-size:0.8rem;">🚫 发现严重安全漏洞，请立即修复</div>';
+      }
+      var scans = sec.scans || [];
+      if (scans.length > 0) {
+        html += '<div class="sec-grid">';
+        scans.forEach(function(scan) {
+          html += '<div class="sec-item ' + (scan.passed ? 'pass' : 'fail') + '">';
+          html += '<span>' + (scan.passed ? '✅' : '❌') + '</span><span>' + esc(scan.name) + '</span></div>';
+        });
+        html += '</div>';
+      }
+
+      html += '</div></div>';
+    }
+
+    // Layer 4
+    if (layers.layer4) {
+      var l4 = layers.layer4;
+      var l4score = l4.score || (l4.robust_score||0) + (l4.correct_score||0) + (l4.delta_score||0);
+      var l4max = l4.max_score || l4.max || (l4.robust_max||0) + (l4.correct_max||0) + (l4.delta_max||0) || 60;
+      var l4threshold = Math.round(l4max * 0.6);
+      html += layerCardOpen('Layer 4 · 功能动态测试', l4score, l4max, l4score >= l4threshold);
+      html += '<div class="card-body">';
+
+      // Sub-score breakdown if available
+      if (l4.robust_score != null || l4.correct_score != null || l4.delta_score != null) {
+        html += '<div style="display:flex;gap:1.25rem;flex-wrap:wrap;margin-bottom:1rem;">';
+        if (l4.robust_score != null) {
+          var rMax = l4.robust_max || 8;
+          var rPct = Math.round((l4.robust_score / rMax) * 100);
+          html += '<div style="flex:1;min-width:120px;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">' +
+            '<div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.25rem;">健壮性</div>' +
+            '<div style="font-family:Poppins,sans-serif;font-size:1.25rem;font-weight:700;color:' + scoreColor(rPct) + '">' + l4.robust_score + '<span style="font-size:0.8rem;font-weight:400;color:var(--text-muted);">/' + rMax + '</span></div></div>';
+        }
+        if (l4.correct_score != null) {
+          var cMax = l4.correct_max || 22;
+          var cPct = Math.round((l4.correct_score / cMax) * 100);
+          html += '<div style="flex:1;min-width:120px;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">' +
+            '<div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.25rem;">正确性</div>' +
+            '<div style="font-family:Poppins,sans-serif;font-size:1.25rem;font-weight:700;color:' + scoreColor(cPct) + '">' + l4.correct_score + '<span style="font-size:0.8rem;font-weight:400;color:var(--text-muted);">/' + cMax + '</span></div></div>';
+        }
+        if (l4.delta_score != null) {
+          var dMax = l4.delta_max || 30;
+          var dPct = dMax > 0 ? Math.round((l4.delta_score / dMax) * 100) : 0;
+          html += '<div style="flex:1;min-width:120px;padding:0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">' +
+            '<div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.25rem;">增量价值</div>' +
+            '<div style="font-family:Poppins,sans-serif;font-size:1.25rem;font-weight:700;color:' + (dMax>0 ? scoreColor(dPct) : 'var(--text-muted)') + '">' + (dMax > 0 ? l4.delta_score + '<span style="font-size:0.8rem;font-weight:400;color:var(--text-muted);">/' + dMax + '</span>' : '—') + '</div></div>';
+        }
+        html += '</div>';
+      }
+
+      var tests = d.test_cases || [];
+      var passed = tests.filter(function(t) { return t.result === 'pass'; }).length;
+      var total = tests.length;
+      var pct = total > 0 ? Math.round((passed / total) * 100) : 0;
+      var pctCol = scoreColor(pct);
+
+      html += '<div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1rem;">';
+      html += '<div style="font-family:Poppins,sans-serif;font-size:2rem;font-weight:700;color:' + pctCol + '">' + pct + '%</div>';
+      html += '<div><div style="font-size:0.875rem;">' + passed + ' / ' + total + ' 测试通过</div>';
+      html += '<div style="font-size:0.75rem;color:var(--text-muted);">点击「测试用例」标签查看断言详情</div></div></div>';
+
+      tests.forEach(function(t) {
+        var icon = t.result === 'pass' ? '✅' : t.result === 'partial' ? '⚠️' : '❌';
+        var p = t.priority || '';
+        html += '<div style="display:flex;align-items:center;gap:0.625rem;padding:0.375rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">';
+        html += '<span>' + icon + '</span>';
+        if (p) html += '<span class="p-badge ' + p.toLowerCase() + '">' + p + '</span>';
+        html += '<span>' + esc(t.description || t.id || '') + '</span></div>';
+      });
+
+      html += '</div></div>';
+    }
+
+    el.innerHTML = html;
+  }
+
+  function layerCardOpen(title, score, max, passed) {
+    var pct = Math.round((score / max) * 100);
+    var col = scoreColor(pct);
+    var tagBg = passed ? 'var(--green-bg)' : 'var(--red-bg)';
+    var tagCol = passed ? 'var(--green)' : 'var(--red)';
+    var tagTxt = passed ? '通过' : '未通过';
+    return '<div class="card"><div class="card-head">' +
+      '<span class="card-head-label">' + title + '</span>' +
+      '<div style="display:flex;align-items:center;gap:0.75rem;">' +
+      '<span style="font-family:Poppins,sans-serif;font-size:0.875rem;font-weight:700;color:' + col + '">' + score + '/' + max + '</span>' +
+      '<span class="tag-sm" style="background:' + tagBg + ';color:' + tagCol + '">' + tagTxt + '</span>' +
+      '</div></div>';
+  }
+
+  // ---- Tests ----
+  function renderTests(d) {
+    var el = document.getElementById('tests-content');
+    var tests = d.test_cases || [];
+    if (tests.length === 0) {
+      el.innerHTML = '<div class="empty">暂无测试用例数据</div>';
+      return;
+    }
+
+    var passed = tests.filter(function(t) { return t.result === 'pass'; }).length;
+    var failed = tests.filter(function(t) { return t.result === 'fail'; }).length;
+    var pending = tests.filter(function(t) { return t.result === 'pending'; }).length;
+    var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">' +
+      '<div style="font-family:Poppins,sans-serif;font-size:0.875rem;font-weight:600;">共 ' + tests.length + ' 个测试用例 &nbsp;·&nbsp; ' +
+      '<span style="color:var(--green)">' + passed + ' 通过</span> / ' +
+      '<span style="color:var(--red)">' + failed + ' 失败</span>' +
+      (pending > 0 ? ' / <span style="color:var(--text-muted)">' + pending + ' 待执行</span>' : '') +
+      '</div>' +
+      '<div style="font-size:0.75rem;color:var(--text-muted);">点击用例展开断言 & 评估指标详情</div></div>';
+
+    tests.forEach(function(t, i) {
+      var isPending = t.result === 'pending';
+      var icon = t.result === 'pass' ? '✅' : t.result === 'partial' ? '⚠️' : isPending ? '⏳' : '❌';
+      var p = (t.priority || '').toLowerCase();
+      var nCriteria = (t.criteria || t.evaluation_criteria || []).length;
+      var nAssert = (t.assertions || []).length;
+      var ws = t.with_skill || {};
+      var wo = t.without_skill || {};
+
+      html += '<div class="test-card">';
+      html += '<div class="test-head" onclick="toggleTest(' + i + ')">';
+      html += '<span class="test-icon">' + icon + '</span>';
+      html += '<div class="test-info">';
+      var tcTitle = t.label || t.expected_behavior || t.description || t.id || '';
+      html += '<div class="test-name">' + esc(tcTitle.substring(0, 100)) + '</div>';
+      if (isPending) html += '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.15rem;">⏳ 概念用例（已生成，待动态执行）</div>';
+      // mini stats row
+      var miniParts = [];
+      if (ws.composite_score != null) miniParts.push('综合评分 <b>' + Math.round(ws.composite_score * 100) + '%</b>');
+      if (ws.total_tokens) miniParts.push('tokens ' + ws.total_tokens.toLocaleString());
+      if (t.delta_composite != null) {
+        var dSign = t.delta_composite >= 0 ? '+' : '';
+        miniParts.push('<span style="color:var(--green)">Δ' + dSign + Math.round(t.delta_composite * 100) + '%</span>');
+      }
+      if (miniParts.length > 0) html += '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.2rem;">' + miniParts.join(' &nbsp;·&nbsp; ') + '</div>';
+      if (t.error) html += '<div class="test-err">' + esc(t.error) + '</div>';
+      html += '</div>';
+      html += '<div class="test-meta">';
+      if (p) html += '<span class="p-badge ' + p + '">' + (t.priority || '') + '</span>';
+      if (t.mcp_affected) html += '<span style="font-size:0.68rem;background:var(--yellow-bg);color:var(--yellow);padding:0.1rem 0.4rem;border-radius:3px;">MCP</span>';
+      html += '<span style="font-size:0.72rem;color:var(--text-muted);">' + nAssert + ' 断言 · ' + nCriteria + ' 指标</span>';
+      html += '<span class="test-chevron" id="chev-' + i + '">▶</span>';
+      html += '</div></div>';
+
+      html += '<div class="test-body" id="tb-' + i + '">';
+
+      // -- Prompt / Input --
+      var prompt = t.prompt || (t.execution_record && t.execution_record.input);
+      if (prompt) {
+        html += '<div style="font-size:0.78rem;font-weight:600;margin-bottom:0.375rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">📥 测试输入</div>';
+        html += '<div style="font-size:0.8rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:0.625rem 0.875rem;margin-bottom:0.75rem;line-height:1.6;white-space:pre-wrap;">' + esc(prompt) + '</div>';
+      }
+
+      // -- Execution Output --
+      var execOut = t.execution_record && t.execution_record.output;
+      var execMethod = t.execution_record && t.execution_record.method;
+      var execDuration = t.execution_record && t.execution_record.duration_ms;
+      if (execOut) {
+        html += '<div style="font-size:0.78rem;font-weight:600;margin-bottom:0.375rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">📤 执行输出'
+          + (execMethod ? ' <span style="text-transform:none;font-weight:400;font-size:0.7rem;margin-left:0.25rem;background:var(--blue-bg);color:var(--blue);padding:0.1rem 0.35rem;border-radius:3px;">' + esc(execMethod) + '</span>' : '')
+          + (execDuration ? ' <span style="text-transform:none;font-weight:400;font-size:0.7rem;color:var(--text-muted);">' + execDuration + 'ms</span>' : '')
+          + '</div>';
+        html += '<div style="font-size:0.8rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:var(--radius);padding:0.625rem 0.875rem;margin-bottom:0.75rem;line-height:1.6;max-height:200px;overflow-y:auto;white-space:pre-wrap;">' + esc(execOut) + '</div>';
+      } else if (ws.notes) {
+        html += '<div style="font-size:0.78rem;font-weight:600;margin-bottom:0.375rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">📤 执行备注</div>';
+        html += '<div style="font-size:0.8rem;background:var(--bg);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:var(--radius);padding:0.625rem 0.875rem;margin-bottom:0.75rem;line-height:1.6;">' + esc(ws.notes) + '</div>';
+      }
+
+      // -- Assertions --
+      if (nAssert > 0) {
+        var passedAssert = (t.assertions || []).filter(function(a) { return a.passed; }).length;
+        html += '<div style="font-size:0.78rem;font-weight:600;margin-bottom:0.375rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">✔ 断言检查 <span style="font-weight:400;text-transform:none;color:' + scoreColor(Math.round(passedAssert/(t.assertions.length||1)*100)) + '">' + passedAssert + '/' + t.assertions.length + ' 通过</span></div>';
+        t.assertions.forEach(function(a) {
+          html += '<div class="assertion-row">';
+          html += '<span class="assertion-icon">' + (a.passed ? '✅' : '❌') + '</span>';
+          html += '<div class="assertion-text">' + esc(a.name || a.description || '') +
+            (a.evidence ? '<div class="assertion-ev">' + esc(a.evidence) + '</div>' : '') + '</div>';
+          html += '</div>';
+        });
+      }
+
+      // -- Evaluation Criteria --
+      var criteria = t.evaluation_criteria || [];
+      if (criteria.length > 0) {
+        html += '<div style="font-size:0.78rem;font-weight:600;margin:0.75rem 0 0.375rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">可量化评估指标</div>';
+        criteria.forEach(function(c) {
+          var cScore = c.score != null ? c.score : (ws.criteria_results || []).filter(function(r){ return r.criterion === c.criterion; }).map(function(r){ return r.score; })[0];
+          var cEvidence = (ws.criteria_results || []).filter(function(r){ return r.criterion === c.criterion; }).map(function(r){ return r.evidence; })[0];
+          var pct = cScore != null ? Math.round(cScore * 100) : null;
+          var col = pct != null ? scoreColor(pct) : 'var(--text-muted)';
+          html += '<div style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.8rem;">';
+          // weight badge
+          html += '<span style="flex-shrink:0;font-family:Poppins,sans-serif;font-size:0.68rem;background:var(--blue-bg);color:var(--blue);padding:0.1rem 0.4rem;border-radius:3px;margin-top:0.1rem;">×' + c.weight + '</span>';
+          html += '<div style="flex:1;">';
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+          html += '<span style="font-weight:500;">' + esc(c.criterion) + '</span>';
+          if (pct != null) html += '<span style="font-family:Poppins,sans-serif;font-size:0.8rem;font-weight:700;color:' + col + '">' + pct + '%</span>';
+          html += '</div>';
+          html += '<div style="color:var(--text-muted);font-size:0.75rem;margin-top:0.15rem;">' + esc(c.description) + '</div>';
+          // scoring rubric
+          if (c.scoring) {
+            html += '<div style="margin-top:0.375rem;font-size:0.72rem;display:flex;gap:0.5rem;flex-wrap:wrap;">';
+            if (c.scoring.full_score) html += '<span style="color:var(--green)">✅ ' + esc(c.scoring.full_score) + '</span>';
+            if (c.scoring.partial_score) html += '<span style="color:var(--yellow)">⚠️ ' + esc(c.scoring.partial_score) + '</span>';
+            if (c.scoring.zero_score) html += '<span style="color:var(--red)">❌ ' + esc(c.scoring.zero_score) + '</span>';
+            html += '</div>';
+          }
+          if (cEvidence) html += '<div class="assertion-ev" style="margin-top:0.25rem;">' + esc(cEvidence) + '</div>';
+          html += '</div></div>';
+        });
+        // token budget
+        var tb = t.token_budget;
+        if (tb) {
+          html += '<div style="margin-top:0.5rem;padding:0.5rem 0.625rem;background:var(--bg);border-radius:var(--radius);font-size:0.75rem;display:flex;gap:1.25rem;">';
+          html += '<span style="color:var(--text-muted)">预算 →</span>';
+          html += '<span>输入 <b>' + (tb.expected_input_tokens||'?').toLocaleString() + '</b> tokens</span>';
+          html += '<span>输出 <b>' + (tb.expected_output_tokens||'?').toLocaleString() + '</b> tokens</span>';
+          html += '<span>上限 <b>' + (tb.max_acceptable_total||'?').toLocaleString() + '</b></span>';
+          if (ws.total_tokens) {
+            var over = ws.total_tokens > tb.max_acceptable_total;
+            html += '<span style="color:' + (over ? 'var(--red)' : 'var(--green)') + '">实际 <b>' + ws.total_tokens.toLocaleString() + '</b> ' + (over ? '⚠️超预算' : '✅') + '</span>';
+          }
+          html += '</div>';
+        }
+      }
+
+      // -- With/Without comparison mini table --
+      if (ws.composite_score != null && wo.composite_score != null) {
+        html += '<div style="margin-top:0.625rem;">';
+        html += '<div style="font-size:0.78rem;font-weight:600;margin-bottom:0.375rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">with vs without skill</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">';
+        html += '<thead><tr style="border-bottom:1px solid var(--border);">';
+        html += '<th style="text-align:left;padding:0.25rem 0.5rem;font-weight:600;"></th>';
+        html += '<th style="text-align:center;padding:0.25rem 0.5rem;font-weight:600;">综合评分</th>';
+        html += '<th style="text-align:center;padding:0.25rem 0.5rem;font-weight:600;">Tokens</th>';
+        html += '<th style="text-align:center;padding:0.25rem 0.5rem;font-weight:600;">断言</th>';
+        html += '</tr></thead><tbody>';
+        html += '<tr style="border-bottom:1px solid var(--border);">';
+        html += '<td style="padding:0.25rem 0.5rem;color:var(--green);font-weight:500;">✅ 使用 Skill</td>';
+        html += '<td style="text-align:center;padding:0.25rem 0.5rem;font-weight:700;color:var(--green)">' + Math.round(ws.composite_score * 100) + '%</td>';
+        html += '<td style="text-align:center;padding:0.25rem 0.5rem;">' + (ws.total_tokens || '—').toLocaleString() + '</td>';
+        html += '<td style="text-align:center;padding:0.25rem 0.5rem;">' + Math.round(ws.assertion_score * 100) + '%</td>';
+        html += '</tr><tr>';
+        html += '<td style="padding:0.25rem 0.5rem;color:var(--text-muted);">⬜ 不使用 Skill</td>';
+        html += '<td style="text-align:center;padding:0.25rem 0.5rem;color:var(--text-muted)">' + Math.round(wo.composite_score * 100) + '%</td>';
+        html += '<td style="text-align:center;padding:0.25rem 0.5rem;color:var(--text-muted);">' + (wo.total_tokens || '—').toLocaleString() + '</td>';
+        html += '<td style="text-align:center;padding:0.25rem 0.5rem;color:var(--text-muted);">' + Math.round(wo.assertion_score * 100) + '%</td>';
+        html += '</tr></tbody></table></div>';
+      }
+
+      html += '</div></div>';
+    });
+
+    el.innerHTML = html;
+  }
+
+  function toggleTest(i) {
+    var tb = document.getElementById('tb-' + i);
+    var chev = document.getElementById('chev-' + i);
+    tb.classList.toggle('open');
+    chev.classList.toggle('open');
+  }
+
+  // ---- Benchmark ----
+  function renderBenchmark(d) {
+    var el = document.getElementById('benchmark-content');
+    var ev = d.effect_validation;
+    if (!ev) {
+      el.innerHTML = '<div class="empty">暂无效果分析数据</div>';
+      return;
+    }
+
+    var l4 = (d.layers || {}).layer4 || {};
+    var hasBaseline = ev.without_skill_pass_rate != null || (!l4.delta_skipped && l4.delta_max > 0);
+
+    var vkey = (ev.verdict || '').toLowerCase().replace('_value','');
+    var verdictColors = { positive: 'var(--green)', neutral: 'var(--yellow)', negative: 'var(--red)', marginal: 'var(--yellow)' };
+    var verdictIcons  = { positive: '✅', neutral: '➖', negative: '❌', marginal: '⚠️' };
+    var vc = verdictColors[vkey] || 'var(--text-muted)';
+    var vi = verdictIcons[vkey]  || '—';
+
+    var html = '<div class="card" style="margin-bottom:1.25rem;">';
+    html += '<div class="card-head"><span class="card-head-label">效果验证结论</span></div>';
+    html += '<div class="verdict-card">';
+    html += '<div class="verdict-icon">' + vi + '</div>';
+    html += '<div><div class="verdict-title" style="color:' + vc + '">' + esc(ev.verdict_text || ev.verdict) + '</div>';
+    html += '<div class="verdict-sub">' + esc(ev.summary || '') + '</div></div></div></div>';
+
+    if (hasBaseline) {
+      // ---- A/B comparison (has without-skill baseline) ----
+      html += '<div class="section-title">A/B 对比指标</div>';
+      html += '<table class="bench-table"><thead><tr>';
+      html += '<th>指标</th><th>✅ 使用 Skill</th><th>⬜ 不使用 Skill</th><th>差值</th></tr></thead><tbody>';
+
+      function row(label, w, wo, delta, dClass) {
+        return '<tr><td><strong>' + label + '</strong></td><td>' + esc(w||'—') + '</td><td>' + esc(wo||'—') + '</td><td class="' + (dClass||'dz') + '">' + esc(delta||'—') + '</td></tr>';
+      }
+
+      var withRate = ev.with_skill_pass_rate != null ? Math.round(ev.with_skill_pass_rate * 100) + '%' : '—';
+      var woRate   = ev.without_skill_pass_rate != null ? Math.round(ev.without_skill_pass_rate * 100) + '%' : '—';
+      var rateDelta = ev.delta || ev.pass_rate_delta || '—';
+      var deltaNum  = (ev.with_skill_pass_rate || 0) - (ev.without_skill_pass_rate || 0);
+      html += row('通过率', withRate, woRate, rateDelta, deltaNum > 0 ? 'dp' : deltaNum < 0 ? 'dn' : 'dz');
+
+      if (ev.criteria_score_with != null) {
+        var cw = Math.round(ev.criteria_score_with * 100) + '%';
+        var cwo = ev.criteria_score_without != null ? Math.round(ev.criteria_score_without * 100) + '%' : '—';
+        html += row('综合评分', cw, cwo, ev.criteria_delta || '—', 'dp');
+      }
+      if (ev.time_with || ev.avg_time_with) {
+        html += row('平均耗时', ev.time_with || ev.avg_time_with, ev.time_without || ev.avg_time_without, ev.time_delta || '—', 'dn');
+      }
+      var tw = ev.tokens_with || ev.total_tokens_with;
+      var two = ev.tokens_without || ev.total_tokens_without;
+      if (tw || two) html += row('总 Tokens', tw, two, ev.token_overhead || '—', 'dn');
+      html += '</tbody></table>';
+
+      // Per-test delta table
+      var tests = d.test_cases || [];
+      if (tests.length > 0 && tests.some(function(t) { return t.delta_composite != null; })) {
+        html += '<div class="section-title" style="margin-top:1.5rem;">各用例 with vs without 对比</div>';
+        html += '<table class="bench-table"><thead><tr>';
+        html += '<th>测试用例</th><th>优先级</th><th>with 评分</th><th>without 评分</th><th>Δ</th></tr></thead><tbody>';
+        tests.forEach(function(t) {
+          var icon = t.result === 'pass' ? '✅' : t.result === 'partial' ? '⚠️' : '❌';
+          var p = (t.priority || '').toLowerCase();
+          var ws = t.with_skill || {};
+          var wo = t.without_skill || {};
+          var dc = t.delta_composite;
+          html += '<tr>';
+          html += '<td>' + icon + ' ' + esc(t.description || t.id || '') + '</td>';
+          html += '<td>' + (p ? '<span class="p-badge ' + p + '">' + (t.priority||'') + '</span>' : '—') + '</td>';
+          html += '<td style="font-weight:600;color:var(--green)">' + (ws.composite_score != null ? Math.round(ws.composite_score*100)+'%' : '—') + '</td>';
+          html += '<td style="color:var(--text-muted)">' + (wo.composite_score != null ? Math.round(wo.composite_score*100)+'%' : '—') + '</td>';
+          if (dc != null) {
+            var dSign = dc >= 0 ? '+' : '';
+            html += '<td class="' + (dc > 0 ? 'dp' : dc < 0 ? 'dn' : 'dz') + '">' + dSign + Math.round(dc*100) + '%</td>';
+          } else { html += '<td>—</td>'; }
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      }
+
+    } else {
+      // ---- Document quality metrics (no baseline, no_code / generative profile) ----
+      var rb = l4.robustness_breakdown || {};
+      var robKeys = ['doc_coverage', 'param_valid', 'example_match', 'logic_coherent'];
+      var robLabels = { doc_coverage: '文档覆盖率', param_valid: '参数说明完整性', example_match: '示例匹配度', logic_coherent: '逻辑一致性' };
+      var robIcons  = { doc_coverage: '📚', param_valid: '📋', example_match: '💡', logic_coherent: '🔗' };
+
+      if (Object.keys(rb).length > 0) {
+        html += '<div class="section-title">文档质量指标（健壮性维度）</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;margin-bottom:1.25rem;">';
+        robKeys.forEach(function(k) {
+          if (rb[k] == null) return;
+          var pct = Math.round(rb[k] * 100);
+          var col = scoreColor(pct);
+          html += '<div style="padding:0.875rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">';
+          html += '<div style="font-size:1.25rem;margin-bottom:0.25rem;">' + (robIcons[k]||'') + '</div>';
+          html += '<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.375rem;">' + (robLabels[k]||k) + '</div>';
+          html += '<div style="font-family:Poppins,sans-serif;font-size:1.5rem;font-weight:700;color:' + col + '">' + pct + '%</div>';
+          var bar = '<div style="height:4px;background:var(--border);border-radius:2px;margin-top:0.375rem;"><div style="height:4px;width:' + pct + '%;background:' + col + ';border-radius:2px;"></div></div>';
+          html += bar + '</div>';
+        });
+        html += '</div>';
+      }
+
+      // Correctness score per test
+      var tests = d.test_cases || [];
+      if (tests.length > 0) {
+        html += '<div class="section-title">各用例质量评分</div>';
+        html += '<table class="bench-table"><thead><tr>';
+        html += '<th>测试用例</th><th>优先级</th><th>综合评分</th><th>断言通过</th><th>状态</th></tr></thead><tbody>';
+        tests.forEach(function(t) {
+          var icon = t.result === 'pass' ? '✅' : t.result === 'partial' ? '⚠️' : '❌';
+          var p = (t.priority || '').toLowerCase();
+          var ws = t.with_skill || {};
+          var passedA = (t.assertions || []).filter(function(a) { return a.passed; }).length;
+          var totalA = (t.assertions || []).length;
+          var assertPct = totalA > 0 ? Math.round(passedA/totalA*100) : null;
+          html += '<tr>';
+          html += '<td>' + esc(t.description || t.id || '') + '</td>';
+          html += '<td>' + (p ? '<span class="p-badge ' + p + '">' + (t.priority||'') + '</span>' : '—') + '</td>';
+          if (ws.composite_score != null) {
+            var cPct = Math.round(ws.composite_score*100);
+            html += '<td style="font-weight:600;color:' + scoreColor(cPct) + '">' + cPct + '%</td>';
+          } else { html += '<td>—</td>'; }
+          if (assertPct != null) {
+            html += '<td style="color:' + scoreColor(assertPct) + '">' + passedA + '/' + totalA + ' (' + assertPct + '%)</td>';
+          } else { html += '<td>—</td>'; }
+          html += '<td>' + icon + ' ' + esc(t.result || '') + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+      }
+
+      // Document quality dimensions: correctness score breakdown
+      if (l4.correct_score != null && l4.correct_max > 0) {
+        var correctPct = Math.round(l4.correct_score / l4.correct_max * 100);
+        html += '<div class="section-title" style="margin-top:1.25rem;">正确性得分分析</div>';
+        html += '<div style="display:flex;align-items:center;gap:1.5rem;padding:1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);">';
+        html += '<div style="font-family:Poppins,sans-serif;font-size:2.5rem;font-weight:700;color:' + scoreColor(correctPct) + '">' + correctPct + '%</div>';
+        html += '<div><div style="font-size:0.875rem;font-weight:600;">' + l4.correct_score + ' / ' + l4.correct_max + ' 分</div>';
+        html += '<div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.2rem;">正确性是此 profile 的核心评分维度（占满分 ' + l4.correct_max + '%权重）</div></div>';
+        var cpBar = '<div style="flex:1;max-width:200px;"><div style="height:8px;background:var(--border);border-radius:4px;"><div style="height:8px;width:' + correctPct + '%;background:' + scoreColor(correctPct) + ';border-radius:4px;"></div></div></div>';
+        html += cpBar + '</div>';
+      }
+    }
+
+    el.innerHTML = html;
+  }
+
+  // ---- Bugs ----
+  function renderBugs(d) {
+    var el = document.getElementById('bugs-content');
+    var bugs = d.bugs || [];
+    var recs = d.recommendations || [];
+
+    if (bugs.length === 0 && recs.length === 0) {
+      el.innerHTML = '<div class="empty">无问题记录 🎉</div>';
+      return;
+    }
+
+    var html = '';
+
+    if (bugs.length > 0) {
+      html += '<div class="section-title">发现的问题（' + bugs.length + ' 个）</div>';
+      bugs.forEach(function(bug) {
+        var p = (bug.priority || 'P2').toLowerCase();
+        html += '<div class="bug-card l' + p + '">';
+        html += '<div class="bug-head">';
+        var pbg = p === 'p0' ? 'var(--red-bg)' : p === 'p1' ? 'var(--yellow-bg)' : 'var(--blue-bg)';
+        var pcol = p === 'p0' ? 'var(--red)' : p === 'p1' ? 'var(--yellow)' : 'var(--blue)';
+        html += '<span class="bug-pbadge" style="background:' + pbg + ';color:' + pcol + '">' + (bug.priority || 'P2') + '</span>';
+        html += '<div class="bug-body">';
+        html += '<div class="bug-title">' + esc(bug.title) + '</div>';
+        html += '<div class="bug-desc">' + esc(bug.description) + '</div>';
+        if (bug.location) html += '<div class="bug-loc">📍 ' + esc(bug.location) + '</div>';
+        if (bug.impact) html += '<div class="bug-impact">影响范围: ' + esc(bug.impact) + '</div>';
+        html += '</div></div>';
+
+        if (bug.fix || bug.fix_code) {
+          html += '<div class="bug-fix"><div class="bug-fix-lbl">修复建议</div>';
+          if (bug.fix) html += '<div class="bug-fix-text">' + esc(bug.fix) + '</div>';
+          if (bug.fix_code) html += '<div class="code-block">' + esc(bug.fix_code) + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+    }
+
+    if (recs.length > 0) {
+      var projectedScore = (d.summary.total_score || 0);
+      recs.forEach(function(r) { projectedScore += (r.score_gain || 0); });
+      html += '<div class="section-title" style="margin-top:1.5rem;">修复路线图（预计修复后达 ' + Math.min(projectedScore, 100) + '/100 分）</div>';
+      html += '<div class="rec-list">';
+      recs.forEach(function(rec) {
+        var p = (rec.priority || 'P2').toLowerCase();
+        html += '<div class="rec-row">';
+        html += '<span class="p-badge ' + p + '">' + (rec.priority || 'P2') + '</span>';
+        html += '<div class="rec-desc">' + esc(rec.suggestion || rec.title || '') + '</div>';
+        html += '<div class="rec-gain">+' + (rec.score_gain || 0) + ' 分</div>';
+        html += '<div class="rec-effort">' + esc(rec.effort || '') + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    el.innerHTML = html;
+  }
+
+  // ---- Tab switching ----
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelector('[onclick="switchTab(\'' + name + '\')"]').classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // ---- Util ----
+  function esc(text) {
+    if (text == null) return '';
+    var d = document.createElement('div');
+    d.textContent = String(text);
+    return d.innerHTML;
+  }
+
+  init();
+</script>
+</body>
+</html>
