@@ -124,6 +124,11 @@ class EvalSettings(BaseSettings):
     layer3_p1_count: int = 4
     layer3_p2_count: int = 2
 
+    # Tool availability pre-check for Layer 2 static analysis
+    tool_availability_check: bool = True
+    # Behaviour when tools are missing: "degrade" | "block" | "warn"
+    tool_missing_policy: str = "degrade"
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> EvalSettings:

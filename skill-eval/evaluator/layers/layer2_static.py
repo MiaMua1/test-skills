@@ -10,7 +10,12 @@ from pathlib import Path
 
 import structlog
 
-from evaluator.config import CODE_EXTENSIONS, EXCLUDED_DIRS, SCORE_PROFILES
+from evaluator.config import CODE_EXTENSIONS, EXCLUDED_DIRS, SCORE_PROFILES, get_settings
+from evaluator.layers.tool_checker import (
+    ToolAvailabilityChecker,
+    ToolAvailabilityResult,
+    ToolStatus,
+)
 from evaluator.models.exceptions import BlockedError
 from evaluator.models.skill import SkillInfo
 
@@ -86,12 +91,55 @@ class Layer2Static:
         """
         t_start = time.monotonic()
 
+        # ── Tool availability pre-check ──────────────────────────────────
+        settings = get_settings()
+        tool_avail: ToolAvailabilityResult | None = None
+        if settings.tool_availability_check:
+            checker = ToolAvailabilityChecker()
+            tool_avail = await checker.check_all()
+            self.log.info("layer2.tool_availability",
+                          available=tool_avail.available_count,
+                          total=tool_avail.total_count,
+                          all_available=tool_avail.all_available)
+            # BLOCKED: all tools unavailable
+            if tool_avail.none_available:
+                duration = round(time.monotonic() - t_start, 3)
+                return {
+                    "layer": 2,
+                    "skipped": True,
+                    "reason": "All static analysis tools unavailable",
+                    "evaluation_method": "blocked",
+                    "duration_s": duration,
+                    "tool_availability": tool_avail.as_dict(),
+                    "code_quality": {
+                        "score": 0.0,
+                        "max_score": self.quality_max,
+                        "skipped": True,
+                        "check_items": [{"label": "代码质量（工具全部不可用，Layer 2 BLOCKED）",
+                                         "passed": False, "detail": "no tools available"}],
+                    },
+                    "security": {
+                        "score": 0.0,
+                        "max_score": self.security_max,
+                        "skipped": True,
+                        "security_raw": 0.0,
+                        "is_compliant": False,
+                        "critical_issues": [],
+                        "check_items": [{"label": "安全合规（工具全部不可用，Layer 2 BLOCKED）",
+                                         "passed": False, "detail": "no tools available"}],
+                    },
+                    "combined_score": 0.0,
+                    "passed": False,
+                }
+        else:
+            self.log.info("layer2.tool_availability_check_disabled")
+
         if not self.skill_info.has_code:
             duration = round(time.monotonic() - t_start, 3)
             self.log.info("layer2.skipped_no_code",
                           quality_score=self.quality_max,
                           security_score=self.security_max)
-            return {
+            result = {
                 "layer": 2,
                 "skipped": True,
                 "reason": "No code files found",
@@ -117,9 +165,12 @@ class Layer2Static:
                 "combined_score": self.quality_max + self.security_max,
                 "passed": True,
             }
+            if tool_avail is not None:
+                result["tool_availability"] = tool_avail.as_dict()
+            return result
 
-        quality_result = await self._run_code_quality()
-        security_result = await self._run_security()
+        quality_result = await self._run_code_quality(tool_avail)
+        security_result = await self._run_security(tool_avail)
 
         # v5: CRITICAL vuln → BlockedError
         if security_result.get("critical_issues"):
@@ -140,12 +191,14 @@ class Layer2Static:
             "combined_score": round(combined, 2),
             "passed": True,
         }
+        if tool_avail is not None:
+            result["tool_availability"] = tool_avail.as_dict()
         self.log.info("layer2.complete", combined=combined, duration_s=duration)
         return result
 
     # ── code quality ──────────────────────────────────────────────────────────
 
-    async def _run_code_quality(self) -> dict:
+    async def _run_code_quality(self, tool_avail: ToolAvailabilityResult | None = None) -> dict:
         if self.quality_max == 0:
             return {"score": 0.0, "max_score": 0.0, "skipped": True, "reason": "quality_max=0"}
 
@@ -163,6 +216,18 @@ class Layer2Static:
                 "issues": [],
             }
 
+        # Determine if we are in DEGRADED mode (some tools unavailable)
+        degraded = (
+            tool_avail is not None
+            and not tool_avail.all_available
+            and not tool_avail.none_available
+        )
+        if degraded:
+            ratio = tool_avail.available_count / max(tool_avail.total_count, 1)
+            effective_quality_max = self.quality_max * ratio
+        else:
+            effective_quality_max = self.quality_max
+
         pylint_result = await self._run_pylint(py_files)
         radon_result = await self._run_radon(py_files)
         annotation_ratio = self._check_type_annotations(py_files)
@@ -177,7 +242,7 @@ class Layer2Static:
         # pylint (25%)
         pylint_ratio = pylint_result.get("ratio", 1.0) if pylint_result else None
         if pylint_ratio is None:
-            check_items.append({"label": "pylint 代码质量", "passed": True,
+            check_items.append({"name": "pylint", "status": "SKIP",
                                  "detail": "工具不可用", "weight": "25%"})
         else:
             pylint_ded = (1.0 - pylint_ratio) * 0.25
@@ -249,7 +314,7 @@ class Layer2Static:
         })
 
         quality_ratio = max(0.0, 1.0 - deduction)
-        score = round(quality_ratio * self.quality_max, 2)
+        score = round(quality_ratio * effective_quality_max, 2)
 
         all_issues: list[dict] = []
         if pylint_result:
@@ -257,10 +322,10 @@ class Layer2Static:
         if radon_result:
             all_issues.extend(radon_result.get("issues", [])[:3])
 
-        return {
+        result = {
             "score": score,
-            "max_score": self.quality_max,
-            "evaluation_method": "tool",
+            "max_score": effective_quality_max,
+            "evaluation_method": "degraded" if degraded else "tool",
             "pylint": pylint_result,
             "radon": radon_result,
             "type_annotation_ratio": annotation_ratio,
@@ -269,6 +334,12 @@ class Layer2Static:
             "check_items": check_items,
             "issues": all_issues,
         }
+        if degraded:
+            result["degraded"] = True
+            result["degraded_reason"] = (
+                f"{tool_avail.available_count}/{tool_avail.total_count} tools available"
+            )
+        return result
 
     async def _run_pylint(self, py_files: list[Path]) -> dict | None:
         try:
@@ -388,7 +459,7 @@ class Layer2Static:
 
     # ── security ──────────────────────────────────────────────────────────────
 
-    async def _run_security(self) -> dict:
+    async def _run_security(self, tool_avail: ToolAvailabilityResult | None = None) -> dict:
         """v5 Security: regex scan + bandit + pip-audit, all A.1-A.5."""
         code_files = self._detect_code_files()
 

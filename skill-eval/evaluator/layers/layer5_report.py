@@ -921,6 +921,52 @@ pre{{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:6px;font-size:1
         if l2.get("skipped"):
             skip_note = f"<div style='font-size:12px;color:#94a3b8;margin-top:8px'>ℹ️ {e(l2.get('reason',''))}</div>"
 
+        # Tool availability indicator
+        tool_avail_html = ""
+        tool_avail = l2.get("tool_availability")
+        if tool_avail and isinstance(tool_avail, dict):
+            tools = tool_avail.get("tools", {})
+            all_avail = tool_avail.get("all_available", False)
+            none_avail = tool_avail.get("none_available", False)
+            avail_count = tool_avail.get("available_count", 0)
+            total_count = tool_avail.get("total_count", 0)
+
+            if all_avail:
+                indicator = "<span style='color:#16a34a'>🟢 全部可用</span>"
+                bg = "#f0fdf4"
+                border = "#86efac"
+            elif none_avail:
+                indicator = "<span style='color:#dc2626'>🔴 全部不可用 — Layer 2 BLOCKED</span>"
+                bg = "#fef2f2"
+                border = "#fca5a5"
+            else:
+                indicator = f"<span style='color:#d97706'>🟡 {avail_count}/{total_count} 工具可用</span>"
+                bg = "#fffbeb"
+                border = "#fcd34d"
+
+            tool_rows = []
+            for name, status in sorted(tools.items()):
+                status_val = status if isinstance(status, str) else status.value if hasattr(status, 'value') else str(status)
+                if status_val == "available":
+                    icon = "✅"
+                    color = "#16a34a"
+                elif status_val == "not_installed":
+                    icon = "⚠️"
+                    color = "#d97706"
+                else:
+                    icon = "❌"
+                    color = "#dc2626"
+                tool_rows.append(
+                    f"<span style='display:inline-block;margin:2px 8px 2px 0;font-size:12px;color:{color}'>"
+                    f"{icon} {e(name)}: {e(status_val)}</span>"
+                )
+            tool_avail_html = (
+                f"<div style='margin-top:8px;padding:10px 12px;background:{bg};border:1px solid {border};"
+                f"border-radius:6px;font-size:13px'>"
+                f"<div style='font-weight:600;margin-bottom:4px;color:#475569'>🔧 工具可用性 {indicator}</div>"
+                f"<div>{''.join(tool_rows)}</div></div>"
+            )
+
         return f"""
 <div class="card">
   <details open>
@@ -929,6 +975,7 @@ pre{{background:#0f172a;color:#e2e8f0;padding:12px;border-radius:6px;font-size:1
       <span style='font-size:13px;color:#64748b'>综合 {combined}/{round(cq_max + sec_max, 2)} · ⏱ {dur:.2f}s</span>
     </summary>
     {skip_note}
+    {tool_avail_html}
     <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
         <div style="background:#f8fafc;padding:10px 12px;display:flex;align-items:center;justify-content:space-between">

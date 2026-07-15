@@ -61,6 +61,7 @@ class TestCaseResult(BaseModel):
     robustness_results: list[RobustnessCheckResult] = []
     correctness_results: list[CorrectnessCheckResult] = []
     scores: dict[str, float] = {}
+    tool_availability: Optional[dict] = None
 
 
 class ScoreBreakdownItem(BaseModel):
